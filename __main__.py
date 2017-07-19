@@ -1,11 +1,11 @@
-import json 
+import json
 import requests
 import time
 from db import DB
 
 db = DB()        # instance of DB class
 
-TOKEN = "your_access_token_here"
+TOKEN = "432699358:AAGuo-yI4KKoCF-EZka_fdFS4WRuHJDlz4s"
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
 
 
@@ -59,7 +59,7 @@ def send_message(text, chat_id,reply_markup=None):
 def processing(text, chat):
     if text == "Rohan":
         text = "Hi Rohan, Fuck You!"
-        send_message(text,chat) 
+        send_message(text,chat)
     else:
         send_message(text,chat)
 
@@ -70,10 +70,7 @@ def echo_all(updates):
             chat = update["message"]["chat"]["id"]
             processing(text, chat)
         except Exception as e:
-            print(e) 
-
-def clear_todo():
-    db.delete_all()
+            print(e)
 
 def handle_updates(updates):
     for update in updates["result"]:
@@ -82,26 +79,43 @@ def handle_updates(updates):
             chat=update["message"]["chat"]["id"]
             items = db.items_list()
 
-            if text == "clear all":
-                clear_todo()
+            if text == "/todo":
+                message = "Add items to your todo list"
+                send_message(message,chat)
+                db.items_list()
+                todo_updates(updates)
 
-            elif text == "/done":
-                keyboard=build_keyboard(items)
-                send_message("Select an item to delete:",chat,keyboard)
+        except KeyError:
+            pass
+
+def todo_updates(updates):
+    for update in updates["result"]:
+        try:
+            text=update["message"]["text"]
+            chat=update["message"]["chat"]["id"]
+            items = db.items_list()
+
+            if text == "/todo":
+                continue
 
             elif text in items:
                 db.delete_item(text)
                 items = db.items_list()
 
+            elif text == "/done":
+                keyboard=build_keyboard(items)
+                send_message("Select an item to delete:",chat,keyboard)
+                break
+
             else:
                 db.add_item(text)
                 items = db.items_list()
-            message="\n".join(items)
-            send_message(message,chat)
+                message="\n".join(items)
+                send_message(message,chat)
 
         except KeyError:
             pass
-  
+
 
 def main():
     db.setup()
@@ -116,4 +130,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
