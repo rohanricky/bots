@@ -1,2 +1,2 @@
 # bots
-Intelligent bot to automate tasks.
+Implementation of a basic bot using Telegram API.
